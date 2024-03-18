@@ -1,72 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>
-    </script>   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MacOS clipboard</title>
+    <title>MacOS Clipboard</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f2f2f2;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
         }
-        .string-container {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            background-color: #fff;
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
         }
-        .string-text {
-            flex-grow: 1;
-            margin-right: 10px;
-        }
-        .copy-button {
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
+
+        h1 {
+            font-size: 32px;
             text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            transition-duration: 0.4s;
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+            margin-bottom: 20px;
+            color: #007bff;
         }
-        .copy-button:hover {
-            background-color: #45a049;
+
+        p {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #6c757d;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+
+        li:hover {
+
+            color: green;
+        }
+
+        #dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #fff;
+            color: #333;
+            border: none;
+            border-radius: 50%;
+            padding: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #dark-mode-toggle:hover {
+            background-color: #333;
+            color: #fff;
+        }
+
+        body.dark-mode {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .container.dark-mode {
+            background-color: #444;
+        }
+
+        h1.dark-mode,
+        p.dark-mode {
+            color: #bbb;
+        }
+
+        li.dark-mode {
+            background-color: #555;
+            box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        li.dark-mode:hover {
+            background-color: #666;
         }
     </style>
-</head>
-<body>
-    <div id='body-overall'>
-        <div class="div-container">
-        {{range .}}
-            <div class='string-container'>
-            <span class="string-text">{{.}}</span>
-            <button class="copy-button" onclick="copyToClipboard('{{.}}')">Copy</button>
-            </div>
-        {{end}}
-        </div>
-    </div>
-
     <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text)
-                .then(() => {
-                    alert("Copied to clipboard: " + text);
-                })
-                .catch((error) => {
-                    console.error("Error copying to clipboard: ", error);
-                });
+        var source = new EventSource("/updates");
+
+        source.onmessage = function(event) {
+            console.log(event.data);
+            try {
+                var newData = JSON.parse(event.data);
+                console.log(typeof(newData));
+
+                updateList(newData);
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
+        };
+
+        source.onerror = function(error) {
+            console.error('EventSource failed:', error);
+            // Reconnect if there's an error
+            source.close();
+            source = new EventSource("/updates");
+        };
+
+        function updateList(newData) {
+            var list = document.getElementById("list");
+            list.innerHTML = ""; // Clear existing content
+            newData.forEach(function(item) {
+                var li = document.createElement("li");
+                li.textContent = item;
+                li.setAttribute("onclick", "copyToClipboard(this)");
+                list.appendChild(li);
+            });
+        }
+
+        function copyToClipboard(element) {
+            var text = element.textContent.trim();
+            var textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            alert("Copied to clipboard: " + text);
+        }
+
+        function toggleDarkMode() {
+            var body = document.body;
+            body.classList.toggle("dark-mode");
         }
     </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Clipboard Example</h1>
+        <p>Click an item to copy it to the clipboard.</p>
+        <ul id="list"></ul>
+    </div>
+    <button id="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
 </body>
 </html>
