@@ -25,15 +25,16 @@ func main() {
 
 	http.HandleFunc("/", ShowClipboard)
 	http.HandleFunc("/updates", UpdatesHandler)
-	http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":8080", nil)
+	if err != nil {
+		panic("error occured while running clipboard : " + err.Error())
+	}
 }
 
 func copyFromClipBoard(ch <-chan []byte) {
 	for data_from_clipboard := range ch {
 		newData := string(data_from_clipboard)
 		data = append([]string{newData}, data...)
-		fmt.Println(newData)
-		fmt.Println("*****************************************")
 
 		// Serialize data to JSON
 		jsonData, err := json.Marshal(data)
@@ -57,7 +58,7 @@ func ShowClipboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := tmpl.Execute(w, nil); err != nil {
+	if err := tmpl.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

@@ -26,7 +26,6 @@
             font-size: 32px;
             text-align: center;
             margin-bottom: 20px;
-            color: #007bff;
         }
 
         p {
@@ -49,11 +48,48 @@
             margin-bottom: 15px;
             transition: background-color 0.3s ease;
             cursor: pointer;
+            overflow: hidden;
+            max-height: 100px; /* Adjust this value according to your needs */
+            transition: max-height 0.3s ease; /* Smooth transition */
+            position: relative; /* Add this */
         }
 
-        li:hover {
+        li.expandable {
+            max-height: initial; /* Show full content */
+        }
 
-            color: green;
+        .copy-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: green;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-left: 10px;
+            padding: 10px;
+        }
+
+        .expand-button {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background-color: darkslategray;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+
+        }
+
+        .item-text {
+            margin-top: 30px; /* Add margin only to the text */
         }
 
         #dark-mode-toggle {
@@ -100,14 +136,12 @@
         }
     </style>
     <script>
+
         var source = new EventSource("/updates");
 
         source.onmessage = function(event) {
-            console.log(event.data);
             try {
                 var newData = JSON.parse(event.data);
-                console.log(typeof(newData));
-
                 updateList(newData);
             } catch (error) {
                 console.error('Error parsing JSON:', error);
@@ -126,8 +160,31 @@
             list.innerHTML = ""; // Clear existing content
             newData.forEach(function(item) {
                 var li = document.createElement("li");
-                li.textContent = item;
-                li.setAttribute("onclick", "copyToClipboard(this)");
+
+                var itemText = document.createElement('div'); // Create a div for the text
+                itemText.textContent = item;
+                itemText.classList.add('item-text'); // Add class for styling
+                li.appendChild(itemText); // Append the text div to the list item
+
+                var copyButton = document.createElement('button');
+                copyButton.textContent = 'Copy';
+                copyButton.classList.add('copy-button');
+                copyButton.onclick = function(event)
+                {
+                    event.stopPropagation();
+                    copyToClipboard(li);
+                };
+                li.appendChild(copyButton);
+
+                var expandButton = document.createElement('button');
+                expandButton.textContent = 'Expand';
+                expandButton.classList.add('expand-button');
+                expandButton.onclick = function(event) {
+                    event.stopPropagation();
+                    toggleExpand(li);
+                };
+                li.appendChild(expandButton);
+
                 list.appendChild(li);
             });
         }
@@ -143,9 +200,21 @@
             alert("Copied to clipboard: " + text);
         }
 
+        function toggleExpand(element) {
+            element.classList.toggle('expandable');
+        }
+
         function toggleDarkMode() {
             var body = document.body;
             body.classList.toggle("dark-mode");
+        }
+        function copyText(button) {
+            var itemText = button.previousElementSibling.textContent;
+            copyToClipboard(itemText);
+        }
+        function expandText(button) {
+            var itemText = button.previousElementSibling.textContent;
+            toggleExpand(itemText);
         }
     </script>
 </head>
@@ -153,7 +222,15 @@
     <div class="container">
         <h1>Clipboard</h1>
         <p>Click an item to copy it to the clipboard.</p>
-        <ul id="list"></ul>
+        <ul id="list">
+            {{range .}}
+            <li>
+            <div class="item-text">{{. | html}}</div>
+            <button class="copy-button" onclick="copyText(this)">Copy</button>
+            <button class="expand-button" onclick="expandText(this)">Expand</button>
+            </li>
+            {{end}}
+        </ul>
     </div>
     <button id="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
 </body>
