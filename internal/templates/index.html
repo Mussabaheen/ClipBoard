@@ -190,7 +190,12 @@
         }
 
         function copyToClipboard(element) {
-            var text = element.textContent.trim();
+            if(typeof(element)!="string"){
+                var text = element.textContent.trim();
+            }
+            else{
+                var text = element;
+            }
             var textarea = document.createElement("textarea");
             textarea.value = text;
             document.body.appendChild(textarea);
@@ -213,8 +218,8 @@
             copyToClipboard(itemText);
         }
         function expandText(button) {
-            var itemText = button.previousElementSibling.textContent;
-            toggleExpand(itemText);
+            var listItem = button.parentElement; // Get the <li> element containing the button
+            toggleExpand(listItem);
         }
     </script>
 </head>

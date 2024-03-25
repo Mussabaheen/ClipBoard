@@ -33,6 +33,7 @@ func main() {
 
 	http.HandleFunc("/", ShowClipboard)
 	http.HandleFunc("/updates", UpdatesHandler)
+	fmt.Println("serving the clipboard UI :", *localPort)
 	err = http.ListenAndServe(":"+*localPort, nil)
 	if err != nil {
 		panic("error occured while running clipboard : " + err.Error())
