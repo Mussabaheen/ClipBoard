@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"path"
@@ -14,7 +15,14 @@ import (
 var data []string
 var clients = make(map[chan []byte]struct{})
 
+var (
+	localPortUsage = "Specify the port number on which you want to serve the UI, by default 8080"
+)
+
 func main() {
+	// localPort represents the arg with flag -p
+	localPort := flag.String("port", "8080", localPortUsage)
+	flag.Parse()
 	err := clipboard.Init()
 	if err != nil {
 		panic(err)
@@ -25,7 +33,7 @@ func main() {
 
 	http.HandleFunc("/", ShowClipboard)
 	http.HandleFunc("/updates", UpdatesHandler)
-	err = http.ListenAndServe(":8080", nil)
+	err = http.ListenAndServe(":"+*localPort, nil)
 	if err != nil {
 		panic("error occured while running clipboard : " + err.Error())
 	}
