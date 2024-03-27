@@ -2,6 +2,18 @@
 # MacOS ClipBoard
 
 App to maintain the clipboard history for MacOS
+
+## Install it on mac
+tap the brew
+
+```bash
+brew tap Mussabaheen/tap
+```
+Install the application
+
+```bash
+brew install clipmaster
+```
     
 ## Run Locally
 
