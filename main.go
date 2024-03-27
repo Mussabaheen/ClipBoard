@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	"embed"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
-	"path"
 	"text/template"
 
 	"golang.design/x/clipboard"
@@ -18,6 +18,9 @@ var clients = make(map[chan []byte]struct{})
 var (
 	localPortUsage = "Specify the port number on which you want to serve the UI, by default 8080"
 )
+
+//go:embed internal/templates/*
+var templates embed.FS
 
 func main() {
 	// localPort represents the arg with flag -p
@@ -60,8 +63,13 @@ func copyFromClipBoard(ch <-chan []byte) {
 }
 
 func ShowClipboard(w http.ResponseWriter, r *http.Request) {
-	fp := path.Join("internal/templates", "index.html")
-	tmpl, err := template.ParseFiles(fp)
+	indexHTML, err := templates.ReadFile("internal/templates/index.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.New("index").Parse(string(indexHTML))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
