@@ -12,7 +12,7 @@ brew tap Mussabaheen/tap
 Install the application
 
 ```bash
-brew install clipmaster
+brew install Mussabaheen/tap/clipmaster
 ```
     
 ## Run Locally
