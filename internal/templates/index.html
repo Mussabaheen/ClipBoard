@@ -172,7 +172,7 @@
                 copyButton.onclick = function(event)
                 {
                     event.stopPropagation();
-                    copyToClipboard(li);
+                    copyToClipboard(item);
                 };
                 li.appendChild(copyButton);
 
@@ -189,13 +189,7 @@
             });
         }
 
-        function copyToClipboard(element) {
-            if(typeof(element)!="string"){
-                var text = element.textContent.trim();
-            }
-            else{
-                var text = element;
-            }
+        function copyToClipboard(text) {
             var textarea = document.createElement("textarea");
             textarea.value = text;
             document.body.appendChild(textarea);
@@ -214,7 +208,7 @@
             body.classList.toggle("dark-mode");
         }
         function copyText(button) {
-            var itemText = button.previousElementSibling.textContent;
+            var itemText = button.parentElement.querySelector('.item-text').textContent;
             copyToClipboard(itemText);
         }
         function expandText(button) {
